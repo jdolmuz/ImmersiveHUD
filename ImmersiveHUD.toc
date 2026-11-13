@@ -1,0 +1,11 @@
+## Interface: 16001, 120105
+## Title: Immersive HUD
+## Notes: Fades the HUD while you travel, brings it back for combat, clicks and targets.
+## Author: Jean
+## Version: 1.0.3
+## SavedVariables: ImmersiveHUDDB
+## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
+
+Debug.lua
+Core.lua
+Options.lua

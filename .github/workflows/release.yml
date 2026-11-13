@@ -1,0 +1,37 @@
+name: Release
+
+# Run manually from the Actions tab, or automatically when a v* tag is pushed.
+# The version comes from "## Version:" in ImmersiveHUD.toc.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from TOC
+        id: v
+        run: echo "version=$(grep -m1 '^## Version:' ImmersiveHUD.toc | awk '{print $3}' | tr -d '\r')" >> "$GITHUB_OUTPUT"
+
+      - name: Build addon zip
+        run: |
+          mkdir -p dist/ImmersiveHUD
+          cp ImmersiveHUD.toc *.lua Bindings.xml README.md LICENSE dist/ImmersiveHUD/
+          cd dist && zip -r "ImmersiveHUD-v${{ steps.v.outputs.version }}.zip" ImmersiveHUD
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ steps.v.outputs.version }}"
+          gh release create "$TAG" "dist/ImmersiveHUD-$TAG.zip" \
+            --target "${{ github.sha }}" \
+            --title "Immersive HUD $TAG" \
+            --notes-file RELEASE_NOTES.md

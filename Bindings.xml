@@ -1,0 +1,8 @@
+<Bindings>
+    <Binding name="IMMERSIVEHUD_PEEK" header="IMMERSIVEHUD" category="ADDONS">
+        ImmersiveHUD_TogglePeek()
+    </Binding>
+    <Binding name="IMMERSIVEHUD_TOGGLE" category="ADDONS">
+        ImmersiveHUD_ToggleEnabled()
+    </Binding>
+</Bindings>
