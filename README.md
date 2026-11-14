@@ -40,7 +40,7 @@ Open the settings with `/ihud`, or go to **Options → AddOns → Immersive HUD*
 - how faded "hidden" is
 - which events bring the HUD back
 
-There are also keybinds to keep the HUD visible or turn auto-fade on and off.
+There are also keybinds to keep the HUD visible, snooze fading for 5 minutes, or turn auto-fade on and off.
 
 ## Notes
 - It only changes transparency, so it's safe to use in combat. Faded buttons and keybinds still work.
@@ -53,6 +53,8 @@ There are also keybinds to keep the HUD visible or turn auto-fade on and off.
 | `/ihud` | Open settings |
 | `/ihud on` / `off` | Turn auto-fade on or off |
 | `/ihud pin` | Keep the HUD visible |
+| `/ihud snooze [minutes]` | Keep the HUD visible for a few minutes (default 5), then resume fading |
+| `/ihud snooze off` | Cancel a snooze early |
 | `/ihud toggle <element>` | Turn fading on or off for one element |
 | `/ihud frames` | List the HUD frames the add-on found |
 | `/ihud errors` | Copy an error report |

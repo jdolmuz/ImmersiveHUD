@@ -2,7 +2,7 @@
 ## Title: Immersive HUD
 ## Notes: Fades the HUD while you travel, brings it back for combat, clicks and targets.
 ## Author: Jean
-## Version: 1.0.3
+## Version: 1.0.4
 ## SavedVariables: ImmersiveHUDDB
 ## IconTexture: Interface\Icons\INV_Misc_Spyglass_03
 
