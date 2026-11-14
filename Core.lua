@@ -91,6 +91,7 @@ local lastReveal   = 0
 local casting      = false
 local mouseDownAt  = nil
 local forceShow    = false
+local snoozeUntil  = nil    -- GetTime() at which a snooze ends
 
 local captured = {}  -- [frame] = base alpha captured before we started fading
 local managed  = {}  -- list of frames currently under our control
@@ -199,6 +200,7 @@ end
 
 function IHUD:ShouldReveal()
     if forceShow or EditModeActive() then return true end
+    if snoozeUntil and GetTime() < snoozeUntil then return true end
     if db.revealCombat and (InCombatLockdown() or UnitAffectingCombat("player")) then return true end
     if db.revealCasting and casting then return true end
     if db.revealTyping and GetCurrentKeyBoardFocus and GetCurrentKeyBoardFocus() then return true end
@@ -247,6 +249,11 @@ end
 local evalElapsed, rebuildElapsed, reapplyElapsed = 0, 0, 0
 
 local function Evaluate(now)
+    if snoozeUntil and now >= snoozeUntil then
+        snoozeUntil = nil
+        lastReveal = now -- give the normal hold time before fading again
+        print("|cff66ccffImmersive HUD:|r snooze over, auto-fade resumed")
+    end
     if not db.enabled then
         targetFactor = 1
         return
@@ -389,6 +396,39 @@ function IHUD:ToggleForceShow()
     return forceShow
 end
 
+-- Snooze: keep the HUD visible for a set time, then resume auto-fade on its own.
+IHUD.DEFAULT_SNOOZE_MINUTES = 5
+
+function IHUD:Snooze(minutes)
+    minutes = tonumber(minutes) or self.DEFAULT_SNOOZE_MINUTES
+    snoozeUntil = GetTime() + minutes * 60
+    lastReveal = GetTime()
+    targetFactor = 1
+    return minutes
+end
+
+function IHUD:CancelSnooze()
+    local was = snoozeUntil ~= nil
+    snoozeUntil = nil
+    if was then lastReveal = GetTime() end
+    return was
+end
+
+-- Seconds left on the snooze, or nil when not snoozed.
+function IHUD:SnoozeRemaining()
+    if not snoozeUntil then return nil end
+    local left = snoozeUntil - GetTime()
+    return left > 0 and left or nil
+end
+
+function IHUD.FormatDuration(sec)
+    sec = math.ceil(sec)
+    local m, s = math.floor(sec / 60), sec % 60
+    if m > 0 and s > 0 then return string.format("%dm %ds", m, s) end
+    if m > 0 then return string.format("%dm", m) end
+    return string.format("%ds", s)
+end
+
 function IHUD:FrameReport()
     local out = { "Immersive HUD frame report", "" }
     for _, g in ipairs(self.GROUPS) do
@@ -407,14 +447,26 @@ function IHUD:FrameReport()
 end
 
 function IHUD:Status()
-    return string.format("enabled=%s  visibility=%.2f  moving=%s  frames=%d",
-        tostring(db.enabled), factor, tostring(moving), #managed)
+    local left = self:SnoozeRemaining()
+    return string.format("enabled=%s  visibility=%.2f  moving=%s  frames=%d  snooze=%s",
+        tostring(db.enabled), factor, tostring(moving), #managed,
+        left and self.FormatDuration(left) or "off")
 end
 
 -- Key binding hooks (Bindings.xml)
 function ImmersiveHUD_TogglePeek()
     local on = IHUD:ToggleForceShow()
     UIErrorsFrame:AddMessage(on and "Immersive HUD: HUD pinned" or "Immersive HUD: auto-fade resumed", 1, 0.82, 0)
+end
+
+function ImmersiveHUD_ToggleSnooze()
+    local msg
+    if IHUD:CancelSnooze() then
+        msg = "Immersive HUD: snooze cancelled"
+    else
+        msg = string.format("Immersive HUD: fading snoozed for %s", IHUD.FormatDuration(IHUD:Snooze() * 60))
+    end
+    UIErrorsFrame:AddMessage(msg, 1, 0.82, 0)
 end
 
 function ImmersiveHUD_ToggleEnabled()

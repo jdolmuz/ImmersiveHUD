@@ -5,6 +5,7 @@ local ADDON_NAME, ns = ...
 BINDING_HEADER_IMMERSIVEHUD = "Immersive HUD"
 BINDING_NAME_IMMERSIVEHUD_PEEK = "Pin / unpin HUD"
 BINDING_NAME_IMMERSIVEHUD_TOGGLE = "Enable / disable auto-fade"
+BINDING_NAME_IMMERSIVEHUD_SNOOZE = "Snooze / unsnooze fading (5 min)"
 
 local function Print(msg)
     print("|cff66ccffImmersive HUD:|r " .. msg)
@@ -110,6 +111,22 @@ function ns.SetupOptions(IHUD)
             Print("auto-fade " .. (db.enabled and "enabled" or "disabled"))
         elseif cmd == "pin" then
             Print(IHUD:ToggleForceShow() and "HUD pinned visible" or "auto-fade resumed")
+        elseif cmd == "snooze" then
+            if rest == "off" or rest == "cancel" or rest == "stop" then
+                Print(IHUD:CancelSnooze() and "snooze cancelled, auto-fade resumed" or "not snoozed")
+            elseif rest == "" then
+                local left = IHUD:SnoozeRemaining()
+                local mins = IHUD:Snooze()
+                Print(string.format("fading snoozed for %s%s", IHUD.FormatDuration(mins * 60),
+                    left and " (timer restarted)" or ""))
+            else
+                local mins = tonumber(rest:match("^(%d*%.?%d+)m?$") or "")
+                if mins and mins > 0 and mins <= 240 then
+                    Print("fading snoozed for " .. IHUD.FormatDuration(IHUD:Snooze(mins) * 60))
+                else
+                    Print("usage: /ihud snooze [minutes] (up to 240), or /ihud snooze off")
+                end
+            end
         elseif cmd == "toggle" then
             local found
             for _, g in ipairs(IHUD.GROUPS) do
@@ -141,6 +158,7 @@ function ns.SetupOptions(IHUD)
             Print("/ihud - open options")
             Print("/ihud on | off - enable/disable auto-fade")
             Print("/ihud pin - keep HUD visible until you pin again")
+            Print("/ihud snooze [minutes] - keep HUD visible for a while (default 5), 'off' to cancel")
             Print("/ihud toggle <element> - e.g. chat, minimap, questTracker")
             Print("/ihud status | reset")
             Print("/ihud errors - copyable error report")

@@ -5,4 +5,7 @@
     <Binding name="IMMERSIVEHUD_TOGGLE" category="ADDONS">
         ImmersiveHUD_ToggleEnabled()
     </Binding>
+    <Binding name="IMMERSIVEHUD_SNOOZE" category="ADDONS">
+        ImmersiveHUD_ToggleSnooze()
+    </Binding>
 </Bindings>
